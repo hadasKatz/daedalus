@@ -11,6 +11,7 @@ in makeDesktopItem {
     desktopName = "Daedalus${suffixSp}";
     genericName = "Crypto-Currency Wallet";
     categories = "Application;Network;";
+    startupNotify = "true";
   } // {
     path = "share/applications/${name}.desktop";
   }

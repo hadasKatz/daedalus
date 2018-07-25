@@ -65,6 +65,10 @@ let
 
       # add the frontend
       cp -R ${frontend}/share/daedalus $out/usr/share/daedalus/app
+      chmod -R +w $out/usr/share/daedalus/app
+
+      # Add package.json so that electron knows the app name
+      cp ${frontend.packageJSON} $out/usr/share/daedalus/app/main/package.json
 
       # add electron binaries
       cp -R ${electronBinaries} $out/electron

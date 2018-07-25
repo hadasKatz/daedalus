@@ -74,7 +74,10 @@ let
       installationSlug = installPath;
       installedPackages = [ daedalus' self.postInstall self.namespaceHelper daedalus'.cfg self.daedalus-bridge daedalus'.daedalus-frontend ];
       nix-bundle = self.nix-bundle;
-    }).installerBundle // { inherit (self) network; };
+    }).installerBundle // {
+      name = "daedalus-${self.version}-cardano-sl-${self.daedalus-bridge.version}.bin";
+      inherit (self) network version;
+    };
   };
 
 in
