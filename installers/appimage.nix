@@ -76,11 +76,15 @@ let
       cp ${moreElectronLibs}/* $out/electron
 
       # find all dynamic libraries needed for cardano and copy
+      find_libs() {
+          for bin in $out/usr/libexec/*; do
+              lddtree -l $bin | grep '^/nix/store' | grep -v $bin
+          done | sort | uniq | grep -v ld-linux
+      }
       mkdir -p $out/usr/lib
-      for bin in $out/usr/libexec/*; do
-          for lib in $(lddtree -l $bin | grep '^/nix/store' | grep -v $bin); do
-            cp --dereference --force $lib $out/usr/lib
-          done
+      for lib in $(find_libs); do
+          echo "Bundling $lib"
+          cp --dereference $lib $out/usr/lib
       done
 
       chmod -R +w $out/usr/bin $out/usr/libexec $out/usr/lib $out/electron
