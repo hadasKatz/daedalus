@@ -75,16 +75,21 @@ let
       chmod +w $out/electron
       cp ${moreElectronLibs}/* $out/electron
 
-      # find all dynamic libraries needed for cardano and copy
+      # Find all dynamic libraries needed for cardano and copy.
+      # It uses lddtree to recursively find all shared object dependencies.
+      # It also copies the other libraries in the same directory as each
+      # dependency, so that things like NSS modules are picked up.
       find_libs() {
           for bin in $out/usr/libexec/*; do
-              lddtree -l $bin | grep '^/nix/store' | grep -v $bin
-          done | sort | uniq | grep -v ld-linux
+              lddtree -l $bin | grep -v $bin | grep -v ld-linux | grep '^/nix/store' | while read lib; do
+                  dirname $lib
+              done
+          done | sort | uniq
       }
       mkdir -p $out/usr/lib
       for lib in $(find_libs); do
           echo "Bundling $lib"
-          cp --dereference $lib $out/usr/lib
+          cp --no-preserve=mode -d $lib/*.so* $out/usr/lib
       done
 
       chmod -R +w $out/usr/bin $out/usr/libexec $out/usr/lib $out/electron
@@ -94,7 +99,7 @@ let
         patchelf --remove-rpath --no-default-lib --set-interpreter /lib64/ld-linux-x86-64.so.2 $bin
       done
       for lib in $out/usr/lib/*.so*; do
-        patchelf --remove-rpath --no-default-lib $lib
+        patchelf --remove-rpath --no-default-lib $lib || true
       done
 
       cp ${daedalus-frontend}/bin/daedalus-frontend ${update-runner}/bin/update-runner $out/usr/libexec
